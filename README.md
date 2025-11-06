@@ -1,634 +1,269 @@
-<!DOCTYPE html>
+<!--
+  Dashboard tecnológico para perfil GitHub
+  Arquivo: github-dashboard.html
+  Instruções de uso:
+  - Abra este arquivo no navegador para ver o preview.
+  - Substitua os dados de exemplo pelos seus (nome, bio, avatar, repos, estatísticas).
+  - Se quiser automatizar com a API do GitHub, faça fetch para https://api.github.com/users/{username}/repos e https://api.github.com/users/{username} e injete os dados no DOM.
+  - Este arquivo é responsivo e sem frameworks; estilos feitos em CSS puro.
+--><!doctype html>
+
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Dashboard - Seu Nome</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard GitHub — Perfil Tecnológico</title>
+  <style>
+    :root{
+      --bg:#0f1724; /* dark */
+      --card:#0b1220;
+      --muted:#9aa8bd;
+      --accent:#7c3aed; /* purple */
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --success: #16a34a;
+      --danger:#ef4444;
+      --radius:14px;
+      --ff: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:var(--ff);background:linear-gradient(180deg,var(--bg) 0%, #071021 100%);color:#e6eef6}
+    a{color:inherit;text-decoration:none}.container{max-width:1100px;margin:36px auto;padding:28px}
+.grid{display:grid;gap:20px}
 
-        :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #1c2128;
-            --accent-blue: #58a6ff;
-            --accent-purple: #bc8cff;
-            --accent-green: #3fb950;
-            --accent-yellow: #d29922;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --border: #30363d;
-        }
+/* Header */
+header{display:flex;gap:20px;align-items:center}
+.avatar{width:96px;height:96px;border-radius:18px;overflow:hidden;flex:0 0 96px;border:2px solid rgba(255,255,255,0.06)}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.user{display:flex;flex-direction:column;gap:6px}
+.user h1{margin:0;font-size:20px}
+.user p{margin:0;color:var(--muted);font-size:13px}
+.tags{display:flex;gap:8px;margin-top:8px}
+.tag{background:var(--glass);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding: 20px;
-        }
+/* Layout columns */
+.main-grid{grid-template-columns: 1fr 340px}
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+/* Cards */
+.card{background:linear-gradient(180deg,var(--card), rgba(12,18,28,0.7));padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+.card h2{margin:0 0 12px 0;font-size:15px}
+.stats{display:flex;gap:12px}
+.stat{flex:1;padding:12px;background:var(--glass-2);border-radius:12px;text-align:center}
+.stat strong{display:block;font-size:18px}
+.stat span{display:block;color:var(--muted);font-size:12px}
 
-        /* Header */
-        .header {
-            text-align: center;
-            padding: 40px 20px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-        }
+/* Languages bar */
+.lang-list{display:flex;flex-direction:column;gap:8px}
+.lang{display:flex;align-items:center;gap:10px}
+.lang .bar{height:10px;background:rgba(255,255,255,0.06);border-radius:999px;flex:1;overflow:hidden}
+.lang .bar > i{display:block;height:100%;border-radius:999px}
+.lang small{color:var(--muted);min-width:76px;text-align:right;font-size:12px}
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
-        }
+/* Repos list */
+.repo{display:flex;flex-direction:column;gap:6px;padding:12px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:12px}
+.repo .meta{display:flex;gap:10px;align-items:center;font-size:13px}
+.repo .meta small{color:var(--muted)}
+.repo .desc{color:var(--muted);font-size:13px}
+.repo-list{display:grid;gap:10px}
 
-        .profile-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid var(--accent-blue);
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+/* Contributions heatmap (placeholder) */
+.heat{display:flex;gap:6px;align-items:flex-end;height:110px}
+.heat .col{display:flex;flex-direction:column;gap:6px}
+.heat .cell{width:12px;height:12px;border-radius:3px;background:rgba(255,255,255,0.03)}
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+/* Footer */
+footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
 
-        .header p {
-            color: var(--text-secondary);
-            font-size: 1.1em;
-        }
+/* Responsiveness */
+@media (max-width:980px){
+  .main-grid{grid-template-columns:1fr}
+  .avatar{width:76px;height:76px;flex:0 0 76px}
+  .container{padding:18px}
+}
 
-        .typing-text {
-            font-family: 'Courier New', monospace;
-            color: var(--accent-green);
-            margin-top: 10px;
-        }
+/* small helpers */
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
+.row{display:flex;gap:12px;align-items:center}
+.muted{color:var(--muted)}
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+/* colored bars for languages (example palettes) */
+.lang-js{background:linear-gradient(90deg,#f7df1e,#ffd54a)}
+.lang-py{background:linear-gradient(90deg,#3572A5,#79b4e0)}
+.lang-html{background:linear-gradient(90deg,#e34f26,#ff8a5a)}
+.lang-css{background:linear-gradient(90deg,#264de4,#6a8eff)}
+.lang-go{background:linear-gradient(90deg,#00ADD8,#5fd3ef)}
 
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-blue);
-            box-shadow: 0 10px 30px rgba(88, 166, 255, 0.2);
-        }
-
-        .stat-icon {
-            font-size: 2em;
-            margin-bottom: 15px;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Skills Section */
-        .skills-section {
-            background: var(--bg-secondary);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-
-        .skills-section h2 {
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .skill-bars {
-            display: grid;
-            gap: 20px;
-        }
-
-        .skill {
-            position: relative;
-        }
-
-        .skill-name {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .skill-bar {
-            height: 8px;
-            background: var(--bg-tertiary);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .skill-progress {
-            height: 100%;
-            border-radius: 10px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-            position: relative;
-            animation: loadBar 2s ease-out;
-        }
-
-        @keyframes loadBar {
-            from { width: 0; }
-        }
-
-        .skill-progress::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmerSkill 2s infinite;
-        }
-
-        @keyframes shimmerSkill {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        /* Projects Section */
-        .projects-section {
-            margin-bottom: 30px;
-        }
-
-        .projects-section h2 {
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .project-card {
-            background: var(--bg-secondary);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-purple);
-            box-shadow: 0 10px 30px rgba(188, 140, 255, 0.2);
-        }
-
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .project-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: var(--accent-blue);
-        }
-
-        .project-status {
-            font-size: 0.75em;
-            padding: 4px 12px;
-            border-radius: 12px;
-            background: rgba(63, 185, 80, 0.2);
-            color: var(--accent-green);
-            border: 1px solid var(--accent-green);
-        }
-
-        .project-description {
-            color: var(--text-secondary);
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .project-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .tag {
-            font-size: 0.8em;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-            color: var(--accent-blue);
-            border: 1px solid var(--border);
-        }
-
-        .project-links {
-            display: flex;
-            gap: 10px;
-        }
-
-        .project-link {
-            padding: 8px 16px;
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 0.9em;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .project-link:hover {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: #fff;
-        }
-
-        /* Activity Chart */
-        .activity-section {
-            background: var(--bg-secondary);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-
-        .activity-section h2 {
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .activity-chart {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            height: 200px;
-            gap: 8px;
-        }
-
-        .activity-bar {
-            flex: 1;
-            background: linear-gradient(to top, var(--accent-blue), var(--accent-purple));
-            border-radius: 4px 4px 0 0;
-            position: relative;
-            transition: all 0.3s ease;
-            animation: growBar 1s ease-out;
-        }
-
-        @keyframes growBar {
-            from { height: 0 !important; }
-        }
-
-        .activity-bar:hover {
-            opacity: 0.7;
-        }
-
-        .activity-label {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            color: var(--text-secondary);
-            font-size: 0.85em;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 30px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .social-link {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 1.5em;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .social-link:hover {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(88, 166, 255, 0.4);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Pulse Animation */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-    </style>
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="profile-img">👨‍💻</div>
-            <h1>Seu Nome</h1>
-            <p>Desenvolvedor Full Stack | HTML • CSS • JavaScript • Node.js • Python</p>
-            <p class="typing-text">console.log("Buscando minha primeira oportunidade 🚀");</p>
+  <div class="container">
+    <header class="card row">
+      <div class="avatar"><img src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="Avatar"></div>
+      <div class="user">
+        <h1 id="name">Seu Nome / @seu-usuario</h1>
+        <p id="bio">Bio curta do GitHub — desenvolvedor(a) full-stack, entusiasta de automatização e infra.</p>
+        <div class="tags" id="skills">
+          <span class="tag">JavaScript</span>
+          <span class="tag">React</span>
+          <span class="tag">Docker</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="pill">Followers: <strong id="followers">128</strong></div>
+        <div style="height:8px"></div>
+        <a href="#repos" class="pill">Ver repositórios</a>
+      </div>
+    </header><div class="grid main-grid" style="margin-top:20px">
+  <!-- Left column -->
+  <div class="grid">
+    <div class="card">
+      <h2>Resumo</h2>
+      <div class="stats">
+        <div class="stat">
+          <strong id="public-repos">24</strong>
+          <span>Repositórios públicos</span>
+        </div>
+        <div class="stat">
+          <strong id="stars">412</strong>
+          <span>Stars</span>
+        </div>
+        <div class="stat">
+          <strong id="prs">87</strong>
+          <span>Contribuições (mês)</span>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+      <h2>Tecnologias mais usadas</h2>
+      <div class="lang-list" id="languages">
+        <!-- Exemplo: ajustar width via style="--w:70%" e classe para cor -->
+        <div class="lang"><small>JavaScript</small><div class="bar"><i class="lang-js" style="width:68%"></i></div><small>68%</small></div>
+        <div class="lang"><small>Python</small><div class="bar"><i class="lang-py" style="width:22%"></i></div><small>22%</small></div>
+        <div class="lang"><small>HTML</small><div class="bar"><i class="lang-html" style="width:10%"></i></div><small>10%</small></div>
+      </div>
+    </div>
+
+    <div class="card" id="repos">
+      <h2>Principais repositórios</h2>
+      <div class="repo-list">
+        <div class="repo">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <a href="#" style="font-weight:600">nome-do-repo-1</a>
+              <div class="meta"><small class="muted">react • 1.2k stars</small></div>
+            </div>
+            <div class="muted">Updated: 2025-10-14</div>
+          </div>
+          <div class="desc">Breve descrição do repositório — o que faz e tecnologias.</div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">📁</div>
-                <div class="stat-value">15+</div>
-                <div class="stat-label">Projetos</div>
+        <div class="repo">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <a href="#" style="font-weight:600">infra-automation</a>
+              <div class="meta"><small class="muted">ansible • 320 stars</small></div>
             </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">💻</div>
-                <div class="stat-value">500+</div>
-                <div class="stat-label">Commits</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value">50+</div>
-                <div class="stat-label">Stars</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">🔥</div>
-                <div class="stat-value">30</div>
-                <div class="stat-label">Dia Streak</div>
-            </div>
+            <div class="muted">Updated: 2025-09-06</div>
+          </div>
+          <div class="desc">Playbooks e scripts para provisionamento automático de servidores.</div>
         </div>
 
-        <!-- Skills Section -->
-        <div class="skills-section">
-            <h2>💡 Habilidades Técnicas</h2>
-            <div class="skill-bars">
-                <div class="skill">
-                    <div class="skill-name">
-                        <span>HTML5 & CSS3</span>
-                        <span>90%</span>
-                    </div>
-                    <div class="skill-bar">
-                        <div class="skill-progress" style="width: 90%"></div>
-                    </div>
-                </div>
-                
-                <div class="skill">
-                    <div class="skill-name">
-                        <span>JavaScript</span>
-                        <span>85%</span>
-                    </div>
-                    <div class="skill-bar">
-                        <div class="skill-progress" style="width: 85%"></div>
-                    </div>
-                </div>
-                
-                <div class="skill">
-                    <div class="skill-name">
-                        <span>TailwindCSS</span>
-                        <span>80%</span>
-                    </div>
-                    <div class="skill-bar">
-                        <div class="skill-progress" style="width: 80%"></div>
-                    </div>
-                </div>
-                
-                <div class="skill">
-                    <div class="skill-name">
-                        <span>Node.js</span>
-                        <span>75%</span>
-                    </div>
-                    <div class="skill-bar">
-                        <div class="skill-progress" style="width: 75%"></div>
-                    </div>
-                </div>
-                
-                <div class="skill">
-                    <div class="skill-name">
-                        <span>Python</span>
-                        <span>70%</span>
-                    </div>
-                    <div class="skill-bar">
-                        <div class="skill-progress" style="width: 70%"></div>
-                    </div>
-                </div>
+        <!-- Mais itens... -->
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Contribuições (Heatmap)</h2>
+      <p class="muted" style="margin:6px 0 12px 0">Visual simplificado das contribuições — substitua por dados reais via API.</p>
+      <div class="heat" id="heatmap">
+        <!-- Gera colunas com células em JS (exemplo de 20 colunas) -->
+        <!-- Cada coluna contém 7 células; cores mais escuras = mais contribuições -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right column -->
+  <aside>
+    <div class="card" style="margin-bottom:16px">
+      <h2>Stack & foco</h2>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="row"><strong>Backend</strong><div style="margin-left:auto" class="muted">Node.js • Python</div></div>
+        <div class="row"><strong>Infra</strong><div style="margin-left:auto" class="muted">Docker • Kubernetes</div></div>
+        <div class="row"><strong>Frontend</strong><div style="margin-left:auto" class="muted">React • SASS</div></div>
+        <div class="row"><strong>Cloud</strong><div style="margin-left:auto" class="muted">AWS • GCP</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Contatos</h2>
+      <div class="muted" style="font-size:13px">Coloque aqui seus canais públicos</div>
+      <div style="height:12px"></div>
+      <div class="row"><span class="muted">Email</span><div style="margin-left:auto">seu@email.com</div></div>
+      <div class="row"><span class="muted">Site</span><div style="margin-left:auto">seusite.com</div></div>
+      <div class="row"><span class="muted">LinkedIn</span><div style="margin-left:auto">linkedin.com/in/seu</div></div>
+    </div>
+
+  </aside>
+</div>
+
+<footer>
+  <div class="muted">Dashboard gerado — personalize com a API do GitHub para atualizar automaticamente. Template por ChatGPT.</div>
+</footer>
+
+  </div>  <script>
+    // Script opcional para popular heatmap com valores aleatórios (substitua por dados reais)
+    (function(){
+      const heat = document.getElementById('heatmap');
+      const cols = 20; // semanas
+      for(let c=0;c<cols;c++){
+        const col = document.createElement('div');col.className='col';
+        for(let r=0;r<7;r++){
+          const cell = document.createElement('div');cell.className='cell';
+          // aleatório para demo
+          const v = Math.floor(Math.random()*5);
+          if(v>=4) cell.style.backgroundColor='rgba(124,58,237,0.95)';
+          else if(v>=3) cell.style.backgroundColor='rgba(124,58,237,0.7)';
+          else if(v>=2) cell.style.backgroundColor='rgba(124,58,237,0.45)';
+          else if(v>=1) cell.style.backgroundColor='rgba(124,58,237,0.22)';
+          else cell.style.backgroundColor='rgba(255,255,255,0.03)';
+          col.appendChild(cell);
+        }
+        heat.appendChild(col);
+      }
+    })();
+
+    // Exemplos de como popular dinamicamente (descomente e ajuste seu username)
+    /*
+    async function fetchGitHub(username){
+      const userR = await fetch(`https://api.github.com/users/${username}`);
+      const user = await userR.json();
+      document.getElementById('name').textContent = user.name || user.login;
+      document.getElementById('bio').textContent = user.bio || '';
+      document.querySelector('.avatar img').src = user.avatar_url;
+      document.getElementById('followers').textContent = user.followers;
+      document.getElementById('public-repos').textContent = user.public_repos;
+
+      const reposR = await fetch(`https://api.github.com/users/${username}/repos?per_page=6&sort=pushed`);
+      const repos = await reposR.json();
+      const list = document.querySelector('.repo-list');
+      list.innerHTML='';
+      repos.forEach(r=>{
+        const el = document.createElement('div');el.className='repo';
+        el.innerHTML = `
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <a href="${r.html_url}" target="_blank" style="font-weight:600">${r.name}</a>
+              <div class="meta"><small class="muted">${r.language || ''} • ${r.stargazers_count} stars</small></div>
             </div>
-        </div>
-
-        <!-- Activity Chart -->
-        <div class="activity-section">
-            <h2>📊 Atividade Semanal</h2>
-            <div class="activity-chart">
-                <div class="activity-bar" style="height: 80%"></div>
-                <div class="activity-bar" style="height: 60%"></div>
-                <div class="activity-bar" style="height: 90%"></div>
-                <div class="activity-bar" style="height: 75%"></div>
-                <div class="activity-bar" style="height: 95%"></div>
-                <div class="activity-bar" style="height: 70%"></div>
-                <div class="activity-bar" style="height: 85%"></div>
-            </div>
-            <div class="activity-label">
-                <span>Dom</span>
-                <span>Seg</span>
-                <span>Ter</span>
-                <span>Qua</span>
-                <span>Qui</span>
-                <span>Sex</span>
-                <span>Sáb</span>
-            </div>
-        </div>
-
-        <!-- Projects Section -->
-        <div class="projects-section">
-            <h2>🚀 Projetos em Destaque</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-title">Landing Page Responsiva</div>
-                        <div class="project-status">✓ Completo</div>
-                    </div>
-                    <p class="project-description">
-                        Landing page moderna e totalmente responsiva com animações suaves e design profissional.
-                    </p>
-                    <div class="project-tags">
-                        <span class="tag">HTML5</span>
-                        <span class="tag">CSS3</span>
-                        <span class="tag">JavaScript</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="#" class="project-link">👁️ Demo</a>
-                        <a href="#" class="project-link">📂 Código</a>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-title">To-Do App Interativo</div>
-                        <div class="project-status">✓ Completo</div>
-                    </div>
-                    <p class="project-description">
-                        Aplicação de tarefas com CRUD completo, localStorage e interface intuitiva.
-                    </p>
-                    <div class="project-tags">
-                        <span class="tag">JavaScript</span>
-                        <span class="tag">LocalStorage</span>
-                        <span class="tag">CSS3</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="#" class="project-link">👁️ Demo</a>
-                        <a href="#" class="project-link">📂 Código</a>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-title">API RESTful</div>
-                        <div class="project-status">✓ Completo</div>
-                    </div>
-                    <p class="project-description">
-                        API completa com autenticação, validação e documentação para gerenciamento de usuários.
-                    </p>
-                    <div class="project-tags">
-                        <span class="tag">Node.js</span>
-                        <span class="tag">Express</span>
-                        <span class="tag">JWT</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="#" class="project-link">📚 Docs</a>
-                        <a href="#" class="project-link">📂 Código</a>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-title">Web Scraper</div>
-                        <div class="project-status pulse">🚧 Em Desenvolvimento</div>
-                    </div>
-                    <p class="project-description">
-                        Ferramenta de automação para extrair dados da web com Python e Beautiful Soup.
-                    </p>
-                    <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">BeautifulSoup</span>
-                        <span class="tag">Pandas</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="#" class="project-link">📂 Código</a>
-                    </
+            <div class="muted">Updated: ${new Date(r.pushed_at).toISOString().slice(0,10)}</div>
+          </div>
+          <div class="desc">${r.description || ''}</div>
+        `;
+        list.appendChild(el);
+      })
+    }
+    // fetchGitHub('seu-usuario-aqui');
+    */
+  </script></body>
+</html>
